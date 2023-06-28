@@ -15,11 +15,12 @@ may contain errors..
 #--------------------------------------------------
 def main():
     while True:
-        print('OpenMarmot Subnet Calculator')
-        print('0 - Exit')
-        print('1 - Convert CIDR to Subnet Mask')
-        print('2 - Covert Subnet Mask to CIDR')
-        print('3 - Determine the subnet a CIDR IP belongs to')
+        print('===================================')
+        print('    OpenMarmot Subnet Calculator')
+        print('    0 - Exit')
+        print('    1 - Convert CIDR to Subnet Mask')
+        print('    2 - Covert Subnet Mask to CIDR')
+        print('    3 - Determine the subnet a CIDR IP belongs to')
         selection=input('Enter selection: ')
         
         if selection=='0':
