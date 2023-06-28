@@ -40,10 +40,8 @@ def main():
             print('Result: ',result)
         
 #--------------------------------------------------
-
-#--------------------------------------------------
-def cidr_to_subnet(CIDR):
-    ''' converts a CIDR (int) to a subnet (string) '''
+def cidr_to_subnet(cidr):
+    ''' converts a cidr (int) to a subnet (string) '''
     octet1=[1,2,3,4,5,6,7,8]
     octet2=[9,10,11,12,13,14,15,16]
     octet3=[17,18,19,20,21,22,23,24]
@@ -53,19 +51,54 @@ def cidr_to_subnet(CIDR):
 
     subnet=''
     #convert to int if it wasn't already
-    CIDR=int(CIDR)
-    if CIDR in octet1:
-        subnet=str(bitChart[octet1.index(CIDR)])+'.0.0.0'
-    elif CIDR in octet2:
-        subnet='255.'+str(bitChart[octet2.index(CIDR)])+'.0.0'
-    elif CIDR in octet3:
-        subnet='255.255.'+str(bitChart[octet3.index(CIDR)])+'.0'
-    elif CIDR in octet4:
-        subnet='255.255.255.'+str(bitChart[octet4.index(CIDR)])
+    cidr=int(cidr)
+    if cidr in octet1:
+        subnet=str(bitChart[octet1.index(cidr)])+'.0.0.0'
+    elif cidr in octet2:
+        subnet='255.'+str(bitChart[octet2.index(cidr)])+'.0.0'
+    elif cidr in octet3:
+        subnet='255.255.'+str(bitChart[octet3.index(cidr)])+'.0'
+    elif cidr in octet4:
+        subnet='255.255.255.'+str(bitChart[octet4.index(cidr)])
     else:
-        print('Error : variable supplied is out of range for CIDR ',CIDR)
+        print('Error : variable supplied is out of range for CIDR ',cidr)
 
     return subnet
+
+#--------------------------------------------------
+def get_network(cidr):
+    ''' returns the network address a cidr belongs to '''
+    ip,mask=cidr.split('/')
+    binary_mask=cidr_to_subnet(mask)
+    significant_octet=get_significant_octet(binary_mask)
+    increment=256-int(binary_mask.split('.')[significant_octet])
+    net_value=int(ip.split('.')[significant_octet])
+    sub_start=0
+    sub_end=0
+    # generate subnets until we find the right one
+    while True:
+        sub_end=sub_start+increment-1
+        #determine if we are in the correct subnet
+        if sub_end>=net_value:
+            break
+        sub_start=sub_end+1
+    ip=ip.split('.')
+    networkCIDR=''
+    broadcastAddress=''
+    if significant_octet==0:
+        networkCIDR=str(sub_start)+'.0.0.0/'+mask
+        broadcastAddress=str(sub_end)+'.255.255.255'
+    elif significant_octet==1:
+        networkCIDR=ip[0]+'.'+str(sub_start)+'.0.0/'+mask
+        broadcastAddress=ip[0]+'.'+str(sub_end)+'.255.255'
+    elif significant_octet==2:
+        networkCIDR=ip[0]+'.'+ip[1]+'.'+str(sub_start)+'.0/'+mask
+        broadcastAddress=ip[0]+'.'+ip[1]+'.'+str(sub_end)+'.255'
+    elif significant_octet==3:
+        networkCIDR=ip[0]+'.'+ip[1]+'.'+ip[2]+'.'+str(sub_start)+'/'+mask
+        broadcastAddress=ip[0]+'.'+ip[1]+'.'+ip[2]+'.'+str(sub_end)
+
+    return {'network':networkCIDR,'broadcast address':broadcastAddress,'network increment':str(increment)}
 
 #--------------------------------------------------
 def get_significant_octet(subnet_mask,programmer_notation=True):
@@ -97,41 +130,6 @@ def subnet_to_cidr(subnet):
     significant_octet=get_significant_octet(subnet)
     subnet=subnet.split('.')
     return str(octets[significant_octet][bitChart.index(int(subnet[significant_octet]))])
-
-#--------------------------------------------------
-def get_network(CIDR):
-    ''' returns the network address a CIDR belongs to '''
-    ip,mask=CIDR.split('/')
-    binary_mask=cidr_to_subnet(mask)
-    significant_octet=get_significant_octet(binary_mask)
-    increment=256-int(binary_mask.split('.')[significant_octet])
-    net_value=int(ip.split('.')[significant_octet])
-    sub_start=0
-    sub_end=0
-    # generate subnets until we find the right one
-    while True:
-        sub_end=sub_start+increment-1
-        #determine if we are in the correct subnet
-        if sub_end>=net_value:
-            break
-        sub_start=sub_end+1
-    ip=ip.split('.')
-    networkCIDR=''
-    broadcastAddress=''
-    if significant_octet==0:
-        networkCIDR=str(sub_start)+'.0.0.0/'+mask
-        broadcastAddress=str(sub_end)+'.255.255.255'
-    elif significant_octet==1:
-        networkCIDR=ip[0]+'.'+str(sub_start)+'.0.0/'+mask
-        broadcastAddress=ip[0]+'.'+str(sub_end)+'.255.255'
-    elif significant_octet==2:
-        networkCIDR=ip[0]+'.'+ip[1]+'.'+str(sub_start)+'.0/'+mask
-        broadcastAddress=ip[0]+'.'+ip[1]+'.'+str(sub_end)+'.255'
-    elif significant_octet==3:
-        networkCIDR=ip[0]+'.'+ip[1]+'.'+ip[2]+'.'+str(sub_start)+'/'+mask
-        broadcastAddress=ip[0]+'.'+ip[1]+'.'+ip[2]+'.'+str(sub_end)
-
-    return {'network':networkCIDR,'broadcast address':broadcastAddress,'network increment':str(increment)}
-    
+ 
 
 main()
